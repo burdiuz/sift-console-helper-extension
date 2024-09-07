@@ -8,6 +8,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   clearCapturedData(tabId);
 });
 
+// Store API intercepts in session storage
+// When TAB activates, remove from all tabs intercepts and add to active tab
+chrome.tabs.onActivated;
+
 /**
  * Receiver for messages from content scripts
  */
@@ -26,6 +30,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const tabId = sender.tab.id;
 
   switch (type) {
+    case "ce-api:fetch-request":
+      sendResponse({
+        url: `${data.url}${data.url.indexOf("?") ? "&" : "?"}overwritten=true`,
+        options: data.options,
+      });
+      break;
+    case "ce-api:fetch-response":
+      sendResponse(data);
+      break;
     case "ce-tab-info-reset":
       clearCapturedData(tabId);
       break;
@@ -42,7 +55,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // Not calling with empty response causes runtime error
   // Unchecked runtime.lastError: The message port closed before a response was received.
-  sendResponse();
+  // sendResponse();
 
   console.log("onMessage:", request, sender);
 });

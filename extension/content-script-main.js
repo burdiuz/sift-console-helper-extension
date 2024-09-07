@@ -70,6 +70,17 @@ const apiDataProcessors = new Map();
 const addApiDataProcessor = (comparatorFn, processorFn) =>
   apiDataProcessors.set(comparatorFn, processorFn);
 
+const mockResponseStatus = (response, code, text) => {
+  Object.defineProperties(response, {
+    status: {
+      get: () => code,
+    },
+    statusText: {
+      get: () => text,
+    },
+  });
+};
+
 const processApiData = async (url, options, response, xmlHttpRequest) => {
   for (let [comparator, processor] of apiDataProcessors) {
     try {
@@ -123,11 +134,53 @@ XMLHttpRequest.prototype.send = function (data, ...args) {
 
 (() => {
   const originalFetch = window.fetch;
-  window.fetch = (url, options, ...args) =>
-    originalFetch(url, options, ...args).then(async (response) => {
-      await processApiData(url, options, response, null);
-      return response;
-    });
+  window.fetch = async (url, options, ...args) => {
+    // send request for API tinkering
+    try {
+      const update = await tunnelMessage(
+        "ce-api:fetch-request",
+        { url, options },
+        true
+      );
+      // TODO try adding "debugger;" to pause script execution, will help pausing page execution 
+      // until response is sent back
+
+      console.log("Intercepted request:", url, options);
+
+      url = update.url;
+      options = update.options;
+    } catch (error) {
+      console.error(error);
+    }
+
+    let response = await originalFetch(url, options, ...args);
+
+    // send response for API tinkering
+    const { status, statusText } = response;
+    const headers = Array.from(response.headers);
+    const data = await response.json();
+
+    try {
+      const update = await tunnelMessage(
+        "ce-api:fetch-response",
+        { data, headers, status, statusText },
+        true
+      );
+
+      // TODO try adding "debugger;" to pause script execution, will help pausing page execution 
+      // until response is sent back
+      
+      console.log("Intercepted response:", status, statusText, data);
+
+      response = Response.json(update.data, update);
+    } catch (error) {
+      console.error(error);
+      response = Response.json(data, { headers, status, statusText });
+    }
+
+    await processApiData(url, options, response, null);
+    return response;
+  };
 })();
 
 // --- SETUP SCRIPT

@@ -4,7 +4,7 @@
   "description": "How Did We Get Here?",
   "version": "1.0",
   "action": {
-    "default_popup": "index.html",
+    "default_popup": "popup/index.html",
     "default_icon": "chrome_extension.png"
   },
   "background": {
@@ -13,13 +13,13 @@
   },
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "host_permissions": [
-    "<all urls>"
+    "*://*/*"
 
   ],
   "content_scripts": [
     {
       "matches": [
-        "<all urls>"
+        "*://*/*"
       ],
       "css": [],
       "js": ["content-script-isolated.js"],
@@ -28,7 +28,7 @@
     },
     {
       "matches": [
-        "<all urls>"
+        "*://*/*"
       ],
       "css": [],
       "js": ["content-script-main.js"],
