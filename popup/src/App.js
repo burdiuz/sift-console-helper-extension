@@ -8,32 +8,48 @@ import Tab from "@mui/joy/Tab";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import "@fontsource/inter";
+import { AuthView } from "./tabs/auths";
+import { FFOverridesView } from "./tabs/ff-overrides";
+import { EventsView } from "./tabs/events";
+import { SpoofingView } from "./tabs/spoofing";
+import { AccountView } from "./tabs/account";
 import { AppDumpView } from "./tabs/app-dump";
 import { ApiCallsView } from "./tabs/api-calls";
+import { MixpanelView, MixpanelIcon } from "./tabs/mixpanel";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import SettingsIcon from "@mui/icons-material/Settings";
 import { SnackbarsProvider } from "shared/Snackbars";
 import { useEffect, useState } from "react";
 import { Typography } from "@mui/joy";
 import { getActiveTab } from "extension/utils";
-import { ConfigurationView } from "tabs/configuration";
 
 const { chrome } = window;
 
 const TabKeys = {
+  AUTH: "auth",
+  FF_OVERRIDES: "ff-overrides",
+  EVENTS: "events",
+  SPOOFING: "spoofing",
+  ACCOUNT: "account",
   APP_DUMP: "app-state-dump",
   API_CALLS: "api-calls",
-  CONFIGURATION: "configuration",
+  MIXPANEL: "mixpanel",
 };
 
 const AppContent = ({ tabId }) => (
-  <Tabs defaultValue={TabKeys.API_CALLS}>
+  <Tabs defaultValue={TabKeys.AUTH}>
     <Box sx={{ display: "flex" }}>
       <TabList sx={{ flex: 1 }}>
-        <Tab value={TabKeys.API_CALLS}>API</Tab>
-        <Tab value={TabKeys.APP_DUMP}>State Dump</Tab>
-        <Tab value={TabKeys.CONFIGURATION}>
-          <SettingsIcon />
+        <Tab value={TabKeys.AUTH}>Auth</Tab>
+        <Tab value={TabKeys.FF_OVERRIDES}>Local FFs</Tab>
+        <Tab value={TabKeys.EVENTS}>Events</Tab>
+        <Tab value={TabKeys.API_CALLS} sx={{ display: "none" }}>
+          API
+        </Tab>
+        <Tab value={TabKeys.SPOOFING} sx={{ display: "none" }}>Spoofing</Tab>
+        <Tab value={TabKeys.ACCOUNT} sx={{ display: "none" }}>Account</Tab>
+        <Tab value={TabKeys.APP_DUMP}>Dump</Tab>
+        <Tab value={TabKeys.MIXPANEL}>
+          <MixpanelIcon />
         </Tab>
       </TabList>
       {window.location.hash.length > 1 ? (
@@ -72,14 +88,29 @@ const AppContent = ({ tabId }) => (
         </Button>
       )}
     </Box>
+    <TabPanel value={TabKeys.AUTH}>
+      <AuthView />
+    </TabPanel>
+    <TabPanel value={TabKeys.FF_OVERRIDES}>
+      <FFOverridesView />
+    </TabPanel>
+    <TabPanel value={TabKeys.EVENTS}>
+      <EventsView />
+    </TabPanel>
+    <TabPanel value={TabKeys.SPOOFING}>
+      <SpoofingView />
+    </TabPanel>
+    <TabPanel value={TabKeys.ACCOUNT}>
+      <AccountView />
+    </TabPanel>
     <TabPanel value={TabKeys.APP_DUMP}>
       <AppDumpView />
     </TabPanel>
     <TabPanel value={TabKeys.API_CALLS}>
       <ApiCallsView />
     </TabPanel>
-    <TabPanel value={TabKeys.CONFIGURATION}>
-      <ConfigurationView />
+    <TabPanel value={TabKeys.MIXPANEL}>
+      <MixpanelView />
     </TabPanel>
   </Tabs>
 );

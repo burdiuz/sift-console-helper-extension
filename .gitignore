@@ -1,3 +1,7 @@
 /.history
+/extension/event-runner
 /extension/popup
+/extension/configs.js
+/popup/src/configs.js
 /certs
+/manifest.json

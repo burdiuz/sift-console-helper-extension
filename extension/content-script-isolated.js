@@ -1,8 +1,6 @@
-console.log("ISOLATED CONTENT SCRIPT EXECUTED!");
-console.log(window.localStorage.length);
-
-/// ----- TUNNEL MAIN <-> ISOLATED <-> BACKGROUND INIT
-
+/**
+ * Portion of message tunnel between main content script and background script(service worker)
+ */
 window.addEventListener("message", ({ data }) => {
   if (!data || typeof data !== "object") {
     return;
@@ -27,9 +25,3 @@ window.addEventListener("message", ({ data }) => {
     });
   }
 });
-
-/**
- * CAN NOT evaluate scripts.
- * CAN communicate with extension via chrome.runtime.sendMessage
- * Should serve as a tunnel between content script main and extension.
- */

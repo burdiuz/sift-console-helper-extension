@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Extension",
+  "name": "Console Helper",
   "description": "How Did We Get Here?",
   "version": "1.0",
   "action": {
@@ -11,27 +11,26 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": [
-    "*://*/*"
-
-  ],
+  "permissions": ["activeTab", "scripting", "storage", "webNavigation"],
+  "host_permissions": ["*://*/*"],
   "content_scripts": [
     {
-      "matches": [
-        "*://*/*"
-      ],
+      "matches": ["*://*/*"],
       "css": [],
       "js": ["content-script-isolated.js"],
       "run_at": "document_start",
       "world": "ISOLATED"
     },
     {
-      "matches": [
-        "*://*/*"
-      ],
+      "matches": ["*://*/*"],
       "css": [],
-      "js": ["content-script-main.js"],
+      "js": [
+        "main/tunnel.js",
+        "main/processors.js",
+        "main/console-helper.js",
+        "main/mixpanel.js",
+        "main/fetch.js"
+      ],
       "run_at": "document_start",
       "world": "MAIN"
     }
