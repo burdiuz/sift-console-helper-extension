@@ -26,16 +26,16 @@
     },
     async (response) => {
       if (response.status !== 200) {
-        return;
+        return response;
       }
 
+      const newResponse = new Response(response);
       const data = await response.json();
-      // TODO also replace bodyUsed property
-      // https://developer.mozilla.org/en-US/docs/Web/API/Response/bodyUsed
-      response.json = () => Promise.resolve(data);
 
       console.log("Account info captured:", data);
       tunnelMessage("ce-account-info-captured", data);
+
+      return newResponse;
     }
   );
 
@@ -61,19 +61,19 @@
     },
     async (response) => {
       if (response.status !== 200) {
-        return;
+        return response;
       }
 
+      const newResponse = new Response(response);
       const data = await response.json();
-      // TODO also replace bodyUsed property
-      // https://developer.mozilla.org/en-US/docs/Web/API/Response/bodyUsed
-      response.json = () => Promise.resolve(data);
 
       console.log("Analyst info captured:", data);
       tunnelMessage("ce-analyst-info-captured", {
         analyst: data,
         session: getAuthInfo(),
       });
+
+      return newResponse;
     }
   );
 
@@ -90,16 +90,16 @@
     },
     async (response) => {
       if (response.status !== 200) {
-        return;
+        return response;
       }
 
+      const newResponse = new Response(response);
       const data = await response.json();
-      // TODO also replace bodyUsed property
-      // https://developer.mozilla.org/en-US/docs/Web/API/Response/bodyUsed
-      response.json = () => Promise.resolve(data);
 
       console.log("Roles info captured:", data);
       tunnelMessage("ce-roles-info-captured", data);
+
+      return newResponse;
     }
   );
 })();

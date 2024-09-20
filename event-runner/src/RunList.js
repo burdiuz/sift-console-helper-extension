@@ -34,6 +34,10 @@ export const RunList = ({ event, onExecute }) => {
           }`
         );
 
+        document.querySelector("html > head > title").textContent = `(${
+          index + 1
+        }/${repeats}) Sending "${event.event}" to ${event.env}`;
+
         const item = await onExecute();
 
         setRequests((list) => {

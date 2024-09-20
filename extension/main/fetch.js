@@ -49,8 +49,8 @@
     }
 
     return originalFetch(url, options, ...args).then(async (response) => {
-      await processApiData(url, options, response, null);
-      return response;
+      const newResponse = await processApiData(url, options, response, null);
+      return newResponse || response;
     });
   };
 

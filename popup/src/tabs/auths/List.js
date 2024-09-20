@@ -4,6 +4,7 @@ import Table from "@mui/joy/Table";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Fragment } from "react";
 import Divider from "@mui/joy/Divider";
+import { CopyToClipboardButton } from "shared/CopyToClipboardButton";
 
 /*
 
@@ -37,6 +38,11 @@ const ItemRow = ({ value, onApply, onRemove }) => (
       >
         Apply
       </Button>
+      <CopyToClipboardButton
+        value={value}
+        message="Auth session JSON copied to clipboard."
+        sx={{ verticalAlign: "middle" }}
+      />
     </td>
     <td>
       {value.description ? <div>{value.description}</div> : null}
@@ -61,7 +67,7 @@ export const List = ({ list, onApply, onRemove }) => {
     <Table>
       <thead>
         <tr>
-          <th style={{ width: "60px" }}></th>
+          <th style={{ width: "105px" }}></th>
           <th>Host / Name</th>
           <th style={{ width: "80px" }}>Time</th>
           <th style={{ width: "45px" }}></th>

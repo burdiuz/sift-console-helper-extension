@@ -21,6 +21,8 @@ export const getConfig = () => ({
     accountNamePath: "",
     // Path to property with analyst name/id etc, use dot-notation
     analystNamePath: "",
+    // Time to expire, expired auths will be filtered out
+    expireAfter: 86400000,
   },
   events: {
     urls: {

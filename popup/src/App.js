@@ -17,10 +17,13 @@ import { AppDumpView } from "./tabs/app-dump";
 import { ApiCallsView } from "./tabs/api-calls";
 import { MixpanelView, MixpanelIcon } from "./tabs/mixpanel";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { SnackbarsProvider } from "shared/Snackbars";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Typography } from "@mui/joy";
-import { getActiveTab } from "extension/utils";
+import { getActiveTab, getTabRootUrl } from "extension/utils";
+import { SettingsView } from "tabs/settings";
+import { ConfirmationText } from "tabs/settings/ConfirmationText";
 
 const { chrome } = window;
 
@@ -33,6 +36,7 @@ const TabKeys = {
   APP_DUMP: "app-state-dump",
   API_CALLS: "api-calls",
   MIXPANEL: "mixpanel",
+  SETTINGS: "settings",
 };
 
 const AppContent = ({ tabId }) => (
@@ -42,14 +46,21 @@ const AppContent = ({ tabId }) => (
         <Tab value={TabKeys.AUTH}>Auth</Tab>
         <Tab value={TabKeys.FF_OVERRIDES}>Local FFs</Tab>
         <Tab value={TabKeys.EVENTS}>Events</Tab>
-        <Tab value={TabKeys.API_CALLS} sx={{ display: "none" }}>
+        <Tab value={TabKeys.API_CALLS}>
           API
         </Tab>
-        <Tab value={TabKeys.SPOOFING} sx={{ display: "none" }}>Spoofing</Tab>
-        <Tab value={TabKeys.ACCOUNT} sx={{ display: "none" }}>Account</Tab>
+        <Tab value={TabKeys.SPOOFING} sx={{ display: "none" }}>
+          Spoofing
+        </Tab>
+        <Tab value={TabKeys.ACCOUNT} sx={{ display: "none" }}>
+          Account
+        </Tab>
         <Tab value={TabKeys.APP_DUMP}>Dump</Tab>
         <Tab value={TabKeys.MIXPANEL}>
           <MixpanelIcon />
+        </Tab>
+        <Tab value={TabKeys.SETTINGS}>
+          <SettingsIcon />
         </Tab>
       </TabList>
       {window.location.hash.length > 1 ? (
@@ -82,6 +93,8 @@ const AppContent = ({ tabId }) => (
               width: 800,
               height: 600,
             });
+
+            window.close();
           }}
         >
           <OpenInNewIcon />
@@ -112,6 +125,9 @@ const AppContent = ({ tabId }) => (
     <TabPanel value={TabKeys.MIXPANEL}>
       <MixpanelView />
     </TabPanel>
+    <TabPanel value={TabKeys.SETTINGS}>
+      <SettingsView />
+    </TabPanel>
   </Tabs>
 );
 
@@ -128,28 +144,60 @@ const NotAvailable = () => (
   </Box>
 );
 
+const Confirmation = ({ onConfirm }) => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "600px",
+      padding: "25px",
+      gap: "8px",
+    }}
+  >
+    <ConfirmationText />
+    <Button onClick={onConfirm}>Proceed</Button>
+  </Box>
+);
+
+const HASH_TAB_ID = Number(window.location.hash.substr(1));
+
 function App() {
+  const detatched = useMemo(() => !!HASH_TAB_ID, []);
   const [tabAvailable, setTabAvailable] = useState(true);
   const [tabId, setTabId] = useState();
+  const [confirmed, setConfirmed] = useState(
+    () => !!localStorage.getItem("confirmed-to-proceed")
+  );
 
   useEffect(() => {
-    const searchTabId = new URLSearchParams(window.location.search).get(
-      "tabId"
-    );
+    if (!HASH_TAB_ID) {
+      getActiveTab().then((tab) => setTabId(tab.id));
+      setTabAvailable(true);
+      return;
+    }
+
+    // tab was closed
     const removedListener = (tabId) => {
-      if (tabId === searchTabId) {
+      if (tabId === HASH_TAB_ID) {
         setTabAvailable(false);
       }
     };
 
-    if (searchTabId) {
-      // test if tab is available
-      chrome.tabs?.get(searchTabId).catch(() => setTabAvailable(false));
-      chrome.tabs?.onRemoved.addListener(removedListener);
-      setTabId(searchTabId);
-    } else {
-      getActiveTab().then((tab) => setTabId(tab.id));
-    }
+    // test if tab is available
+    chrome.tabs
+      ?.get(HASH_TAB_ID)
+      .then((tab) => {
+        setTabId(HASH_TAB_ID);
+        setTabAvailable(true);
+
+        document.querySelector(
+          "html > head > title"
+        ).textContent = `Console Helper for ${getTabRootUrl(tab)}`;
+      })
+      .catch(() => setTabAvailable(false));
+    chrome.tabs?.onRemoved.addListener(removedListener);
 
     return () => {
       chrome.tabs?.onRemoved.removeListener(removedListener);
@@ -161,7 +209,20 @@ function App() {
       <CssBaseline />
       <div className="App">
         <SnackbarsProvider>
-          {tabAvailable ? <AppContent tabId={tabId} /> : <NotAvailable />}
+          {confirmed ? (
+            tabAvailable ? (
+              <AppContent tabId={tabId} detatched={detatched} />
+            ) : (
+              <NotAvailable />
+            )
+          ) : (
+            <Confirmation
+              onConfirm={() => {
+                localStorage.setItem("confirmed-to-proceed", "1");
+                setConfirmed(true);
+              }}
+            />
+          )}
         </SnackbarsProvider>
       </div>
     </CssVarsProvider>
