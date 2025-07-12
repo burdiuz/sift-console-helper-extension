@@ -34,18 +34,36 @@
     return originalSend.apply(this, [data, ...args]);
   };
 
+  /**
+   * Retrieve Authorization header value
+   * @param {string|URL|Request} request
+   * @param {RequestInit} [options]
+   * @return {string | null}
+   */
+  const extractAuthHeader = (request, options) => {
+    if (request instanceof Request && request.url.match(/^\//)) {
+      return request.headers.get("Authorization");
+    }
+
+    if (String(request).match(/^\//)) {
+      return options?.headers instanceof Headers
+        ? options.headers.get("Authorization")
+        : // undefined or empty string is a no value case -- return null
+          options?.headers?.["Authorization"] || null;
+    }
+
+    return null;
+  };
+
   // -------- FETCH INIT
   let Authorization;
   const originalFetch = window.fetch;
-  window.fetch = (url, options, ...args) => {
-    // FIXME will not work when API requests are sent using absolute URL
-    if (url.match(/^\//)) {
-      const auth =
-        options?.headers instanceof Headers
-          ? options.headers.get("Authorization")
-          : options?.headers?.["Authorization"];
 
-      Authorization = auth || Authorization;
+  window.fetch = (url, options, ...args) => {
+    const auth = extractAuthHeader(url, options);
+
+    if (auth) {
+      Authorization = auth;
     }
 
     return originalFetch(url, options, ...args).then(async (response) => {
@@ -64,12 +82,16 @@
    * @returns {Promise<Response>}
    */
   window.fetchAuth = (url, options, ...args) => {
+    /**
+     * One-time warning
+     */
     if (!fetchAuthUsed) {
       console.warn(
         "Keep in mind that fetchAuth() works only when Chrome Extension is installed and enabled, and you are logged into the Sift Console."
       );
       fetchAuthUsed = true;
     }
+
     if (!options) options = {};
     if (!options.headers) options.headers = {};
 
@@ -81,4 +103,6 @@
 
     return window.fetch(url, options, ...args);
   };
+
+  window.__consoleHelper__ = window.__consoleHelper__ || {};
 })();
