@@ -29,4 +29,6 @@
       }
     }
   );
+
+  window.__consoleHelper__ = window.__consoleHelper__ || {};
 })();
