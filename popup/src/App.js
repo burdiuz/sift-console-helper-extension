@@ -14,7 +14,7 @@ import { EventsView } from "./tabs/events";
 import { SpoofingView } from "./tabs/spoofing";
 import { AccountView } from "./tabs/account";
 import { AppDumpView } from "./tabs/app-dump";
-import { ApiCallsView } from "./tabs/api-calls";
+import { LockStateView } from "./tabs/lock-state";
 import { MixpanelView, MixpanelIcon } from "./tabs/mixpanel";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -34,7 +34,7 @@ const TabKeys = {
   SPOOFING: "spoofing",
   ACCOUNT: "account",
   APP_DUMP: "app-state-dump",
-  API_CALLS: "api-calls",
+  LOCK_STATE: "lock-state",
   MIXPANEL: "mixpanel",
   SETTINGS: "settings",
 };
@@ -46,9 +46,7 @@ const AppContent = ({ tabId }) => (
         <Tab value={TabKeys.AUTH}>Auth</Tab>
         <Tab value={TabKeys.FF_OVERRIDES}>Local FFs</Tab>
         <Tab value={TabKeys.EVENTS}>Events</Tab>
-        <Tab value={TabKeys.API_CALLS}>
-          API
-        </Tab>
+        <Tab value={TabKeys.LOCK_STATE}>Lock State</Tab>
         <Tab value={TabKeys.SPOOFING} sx={{ display: "none" }}>
           Spoofing
         </Tab>
@@ -119,8 +117,8 @@ const AppContent = ({ tabId }) => (
     <TabPanel value={TabKeys.APP_DUMP}>
       <AppDumpView />
     </TabPanel>
-    <TabPanel value={TabKeys.API_CALLS}>
-      <ApiCallsView />
+    <TabPanel value={TabKeys.LOCK_STATE}>
+      <LockStateView />
     </TabPanel>
     <TabPanel value={TabKeys.MIXPANEL}>
       <MixpanelView />

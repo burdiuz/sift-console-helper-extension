@@ -15,6 +15,9 @@ export const getConfig = () => ({
     // List of LocalStorage keys to store for authentication state
     authStateKeys: [
     ],
+    // List of Auth State keys allowed for sharing
+    authShareKeys: [
+    ],
     // LocalStorage key for auth token
     tokenKey: "",
     // Path to property with account name, use dot-notation

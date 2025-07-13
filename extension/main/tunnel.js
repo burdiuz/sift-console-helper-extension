@@ -66,7 +66,7 @@
   /**
    * When page reloads all content scripts also reload
    * and it is a good time to clear all cached data for this tab
-   * anyway to will be re-fetched from API
+   * anyway it will be re-fetched from API
    *
    * Page reloads also happen on logout, this way we will clear stale data
    */

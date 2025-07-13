@@ -52,6 +52,14 @@ const sendConfigToTheTab = (tabId) => {
     .catch(console.error);
 };
 
+const lockStateForTheTab = async (tabId) => {
+  const data = await getStorageItem("lock-state");
+
+  if (data?.[tabId]) {
+    return chrome.tabs.sendMessage(tabId, { type: "ce-lock-state:tab-enable" });
+  }
+};
+
 const storeAuthSession = async (tab, session, analyst) => {
   const {
     auths: { tokenKey, analystNamePath },
@@ -100,6 +108,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "ce-tab-info-reset":
       clearCapturedData(tabId);
       sendConfigToTheTab(tabId);
+      lockStateForTheTab(tabId);
       break;
     case "ce-account-info-captured":
       accounts[tabId] = data;

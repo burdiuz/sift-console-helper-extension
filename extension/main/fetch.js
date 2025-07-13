@@ -35,7 +35,7 @@
   };
 
   /**
-   * Retrieve Authorization header value
+   * Retrieve Authorization header value from requests with relative URLs
    * @param {string|URL|Request} request
    * @param {RequestInit} [options]
    * @return {string | null}

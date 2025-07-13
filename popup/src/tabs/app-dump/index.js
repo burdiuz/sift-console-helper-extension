@@ -15,6 +15,7 @@ export const dumpAppState = (
 ) =>
   new Promise((resolve, reject) => {
     function injectedFn(dumpLS, dumpSS, dumpCk) {
+      // TODO filter out Lock State keys from session storage
       return {
         localStorage: dumpLS ? { ...window.localStorage } : undefined,
         sessionStorage: dumpSS ? { ...window.sessionStorage } : undefined,
