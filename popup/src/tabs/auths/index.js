@@ -46,9 +46,11 @@ const getAuthsList = async (config) => {
     list = [];
   }
 
-  return list.filter(
-    ({ date }) => date > Date.now() - config.auths.expireAfter
-  );
+  const { expireAfter } = config.auths;
+
+  return expireAfter
+    ? list.filter(({ date }) => date > Date.now() - config.auths.expireAfter)
+    : list;
 };
 
 // TODO Add auto cleaning algorithm that will delete all logins older than 7 days

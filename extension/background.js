@@ -51,8 +51,7 @@ const storeAuthSession = async (tab, session, analyst) => {
 
   const list = await getStorageItem("app-auth-sessions");
 
-  const exists =
-    list?.find(({ data }) => data[tokenKey] === session[tokenKey]) || false;
+  const exists = list?.some(({ data }) => data[tokenKey] === session[tokenKey]);
 
   if (exists) {
     return;
