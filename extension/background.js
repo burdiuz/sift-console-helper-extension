@@ -93,7 +93,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (type) {
     case "ce-tab-info-reset":
       clearCapturedData(tabId);
-      sendConfigToTheTab(tabId);
+
+      // replaced by config loader
+      // sendConfigToTheTab(tabId);
       break;
     case "ce-account-info-captured":
       accounts[tabId] = data;

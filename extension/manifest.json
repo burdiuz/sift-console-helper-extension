@@ -15,7 +15,7 @@
   "web_accessible_resources": [
     {
       "resources": ["config.json"],
-      "matches": []
+      "matches": ["*://*/*"]
     }
   ],
   "host_permissions": ["*://*/*"],
@@ -23,7 +23,7 @@
     {
       "matches": ["*://*/*"],
       "css": [],
-      "js": ["isolated/tunnel.js"],
+      "js": ["isolated/config.js", "isolated/tunnel.js"],
       "run_at": "document_start",
       "world": "ISOLATED"
     },
@@ -31,6 +31,7 @@
       "matches": ["*://*/*"],
       "css": [],
       "js": [
+        "main/config.js",
         "main/tunnel.js",
         "main/lock-state.js",
         "main/processors.js",
