@@ -1,0 +1,28 @@
+{
+  "auths": {
+    "accountIdKey": "LocalStorage key for current account id",
+    "accountUrlMatcher": "RegExp string for account API request",
+    "analystUrlMatcher": "RegExp string for user/analyst API request",
+    "rolesUrlMatcher": "RegExp string for roles API request",
+    "authStateKeys": [
+      "List of LocalStorage keys to store for authentication state"
+    ],
+    "authShareKeys": [
+      "List of Auth State keys allowed for sharing"
+    ],
+    "tokenKey": "LocalStorage key for auth token",
+    "accountNamePath": "Path to property with account name, use dot-notation",
+    "analystNamePath": "Path to property with analyst name/id etc, use dot-notation",
+    "expireAfter": 86400000 /* Time to expire, expired auths will be filtered out */
+  },
+  "events": {
+    "urls": {
+      "PROD": "URLs for sending events, PROD is default on UI and must exist",
+      "DEV": ""
+    }
+  },
+  "ffOverrides": {
+    "overridesKey": "LocalStorage key for feature overrides",
+    "propertyPath": "Path to FFs container object, use dot-notation"
+  }
+}

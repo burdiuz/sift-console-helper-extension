@@ -12,12 +12,18 @@
     "type": "module"
   },
   "permissions": ["activeTab", "scripting", "storage", "webNavigation"],
+  "web_accessible_resources": [
+    {
+      "resources": ["config.json"],
+      "matches": []
+    }
+  ],
   "host_permissions": ["*://*/*"],
   "content_scripts": [
     {
       "matches": ["*://*/*"],
       "css": [],
-      "js": ["isolated/tunnel.js", "isolated/lock-state.js"],
+      "js": ["isolated/tunnel.js"],
       "run_at": "document_start",
       "world": "ISOLATED"
     },
@@ -26,6 +32,7 @@
       "css": [],
       "js": [
         "main/tunnel.js",
+        "main/lock-state.js",
         "main/processors.js",
         "main/console-helper.js",
         "main/mixpanel.js",

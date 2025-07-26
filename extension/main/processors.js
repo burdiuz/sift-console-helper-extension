@@ -7,7 +7,10 @@
   const processApiData = async (url, options, response, xmlHttpRequest) => {
     for (let [comparator, processor] of apiDataProcessors) {
       try {
-        if (comparator(url, options)) {
+        if (
+          (url instanceof Request && comparator(url.url, url)) ||
+          (!(url instanceof Request) && comparator(String(url), options))
+        ) {
           await processor(response, url, options, xmlHttpRequest);
         }
       } catch (error) {
@@ -16,7 +19,6 @@
       }
     }
   };
-
 
   window.__consoleHelper__ = window.__consoleHelper__ || {};
   window.__consoleHelper__.processApiData = processApiData;

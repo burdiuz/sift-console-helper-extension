@@ -10,7 +10,6 @@ import {
   getAnalystInfo,
 } from "extension/auth";
 import { getStorageItem, setStorageItem } from "extension/storage";
-import { go, getConfig } from "configs";
 import {
   Accordion,
   AccordionDetails,
@@ -19,18 +18,19 @@ import {
   Textarea,
   Typography,
 } from "@mui/joy";
+import { go, useConfig } from "ConfigContext";
 
-const getAuthData = async () => {
+const getAuthData = async (config) => {
   const tab = await getActiveTab();
   const host = getTabRootUrl(tab);
   const analyst = await getAnalystInfo(tab);
-  const data = await dumpAuthSession(tab);
+  const data = await dumpAuthSession(tab, config.auths.authStateKeys);
   const date = Date.now();
 
   return {
     id: date,
     name: analyst
-      ? `${host} / ${go(analyst, getConfig().auths.analystNamePath)}`
+      ? `${host} / ${go(analyst, config.auths.analystNamePath)}`
       : host,
     date,
     data,
@@ -39,21 +39,21 @@ const getAuthData = async () => {
 
 const STORAGE_KEY = "app-auth-sessions";
 
-const getAuthsList = async () => {
-  const {
-    auths: { expireAfter },
-  } = getConfig();
+const getAuthsList = async (config) => {
   let list = await getStorageItem(STORAGE_KEY);
 
   if (!list) {
     list = [];
   }
 
-  return list.filter(({ date }) => date > Date.now() - expireAfter);
+  return list.filter(
+    ({ date }) => date > Date.now() - config.auths.expireAfter
+  );
 };
 
 // TODO Add auto cleaning algorithm that will delete all logins older than 7 days
 export const AuthView = () => {
+  const { getConfig } = useConfig();
   const [list, setList] = useState([]);
   const [description, setDescription] = useState("");
   const [jsonText, setJsonText] = useState("");
@@ -68,17 +68,26 @@ export const AuthView = () => {
   }, [jsonText]);
 
   const reloadList = useCallback(async () => {
-    const list = await getAuthsList();
+    const list = await getAuthsList(getConfig());
 
     setList(list || []);
-    // setList([{ "name":"auth session mock", "id":1726600000000, "date": 1726681802924, "data":{"test_me": "abc-123"}}]);
+    /*
+    setList([
+      {
+        name: "auth session mock",
+        id: 1726600000000,
+        date: 1726681802924,
+        data: { test_me: "abc-123" },
+      },
+    ]);
+    */
   }, []);
 
   const handleStore = useCallback(async () => {
-    const item = await getAuthData();
+    const item = await getAuthData(getConfig());
     item.description = description;
 
-    let list = await getAuthsList();
+    let list = await getAuthsList(getConfig());
 
     list = [item, ...list].sort((a, b) => (a.date < b.date ? 1 : -1));
 
@@ -94,7 +103,7 @@ export const AuthView = () => {
   }, []);
 
   const handleRemove = useCallback(async ({ id }) => {
-    const list = await getAuthsList();
+    const list = await getAuthsList(getConfig());
 
     await setStorageItem(
       STORAGE_KEY,
@@ -106,7 +115,7 @@ export const AuthView = () => {
 
   const handleImport = async () => {
     const item = JSON.parse(jsonText);
-    let list = await getAuthsList();
+    let list = await getAuthsList(getConfig());
 
     list = [item, ...list].sort((a, b) => (a.date < b.date ? 1 : -1));
 
@@ -135,7 +144,12 @@ export const AuthView = () => {
                   setDescription(value)
                 }
               />{" "}
-              <Button onClick={handleStore} title="Store Auth session from current tab">Store auth</Button>
+              <Button
+                onClick={handleStore}
+                title="Store Auth session from current tab"
+              >
+                Store auth
+              </Button>
             </Box>
             <Typography>Import JSON of an Auth session</Typography>
             <Textarea

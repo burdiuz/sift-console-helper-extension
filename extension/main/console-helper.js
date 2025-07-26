@@ -13,29 +13,36 @@
     return match?.[1];
   };
 
+  const isValidAPIRequest = (rgxFn) => (url, options) => {
+    let accountId = getCurrentAccountId();
+    const match = url.match(rgxFn());
+
+    const valid = match && (!options?.method || options?.method === "GET");
+
+    if (accountId) {
+      return valid && accountId === match[1];
+    } else if (!accountId && match?.[1]) {
+      // if not available in LS, we lookup for it in URL
+      accountId = match[1];
+    }
+
+    return valid;
+  };
+
   // send account data to extension
   addApiDataProcessor(
-    (url, options) => {
-      const accountId = getCurrentAccountId();
-      const match = url.match(new RegExp(getConfig().auths.accountUrlMatcher));
-      return (
-        match &&
-        match[1] === accountId &&
-        (!options?.method || options?.method === "GET")
-      );
-    },
+    isValidAPIRequest(() => new RegExp(getConfig().auths.accountUrlMatcher)),
     async (response) => {
       if (response.status !== 200) {
         return response;
       }
 
-      const newResponse = new Response(response);
-      const data = await response.json();
+      const data = await response.clone().json();
 
       console.log("Account info captured:", data);
       tunnelMessage("ce-account-info-captured", data);
 
-      return newResponse;
+      return response;
     }
   );
 
@@ -50,22 +57,13 @@
 
   // send analyst data to extension
   addApiDataProcessor(
-    (url, options) => {
-      const accountId = getCurrentAccountId();
-      const match = url.match(getConfig().auths.analystUrlMatcher);
-      return (
-        match &&
-        match[1] === accountId &&
-        (!options?.method || options?.method === "GET")
-      );
-    },
+    isValidAPIRequest(() => new RegExp(getConfig().auths.analystUrlMatcher)),
     async (response) => {
       if (response.status !== 200) {
         return response;
       }
 
-      const newResponse = new Response(response);
-      const data = await response.json();
+      const data = await response.clone().json();
 
       console.log("Analyst info captured:", data);
       tunnelMessage("ce-analyst-info-captured", {
@@ -73,33 +71,24 @@
         session: getAuthInfo(),
       });
 
-      return newResponse;
+      return response;
     }
   );
 
   // send roles data to extension
   addApiDataProcessor(
-    (url, options) => {
-      const accountId = getCurrentAccountId();
-      const match = url.match(getConfig().auths.rolesUrlMatcher);
-      return (
-        match &&
-        match[1] === accountId &&
-        (!options?.method || options?.method === "GET")
-      );
-    },
+    isValidAPIRequest(() => new RegExp(getConfig().auths.rolesUrlMatcher)),
     async (response) => {
       if (response.status !== 200) {
         return response;
       }
 
-      const newResponse = new Response(response);
-      const data = await response.json();
+      const data = await response.clone().json();
 
       console.log("Roles info captured:", data);
       tunnelMessage("ce-roles-info-captured", data);
 
-      return newResponse;
+      return response;
     }
   );
 })();

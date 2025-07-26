@@ -37,6 +37,24 @@ export const EventsView = () => {
     setOptions(event);
   }, []);
 
+  const handleDuplicate = useCallback((event) => {
+    setOptions({
+      ...event,
+      id: undefined,
+    });
+  }, []);
+
+  const handleRemove = useCallback(async (id) => {
+    const list = (await getStorageItem(STORAGE_KEY)) || [];
+
+    await setStorageItem(
+      STORAGE_KEY,
+      list.filter((item) => item.id !== id)
+    );
+
+    reloadList();
+  }, []);
+
   const handleSend = useCallback(async (event) => {
     // save event with send parameters except for custom template values
     const list = await getStorageItem(STORAGE_KEY);
@@ -74,8 +92,8 @@ export const EventsView = () => {
     }
   }, []);
 
-  const handleSave = async (code) => {
-    const list = await getStorageItem(STORAGE_KEY) || [];
+  const handleSave = async ({ template, description }) => {
+    const list = (await getStorageItem(STORAGE_KEY)) || [];
 
     if (options.id) {
       await setStorageItem(
@@ -87,7 +105,8 @@ export const EventsView = () => {
 
           return {
             ...options,
-            template: code,
+            description,
+            template,
           };
         })
       );
@@ -95,7 +114,8 @@ export const EventsView = () => {
       const result = {
         id: Date.now(),
         ...options,
-        template: code,
+        description,
+        template,
       };
 
       await setStorageItem(STORAGE_KEY, [result, ...list]);
@@ -111,7 +131,7 @@ export const EventsView = () => {
 
   return options ? (
     <EventJsonEditor
-      template={options.template}
+      options={options}
       onSave={handleSave}
       onCancel={() => setOptions(null)}
     />
@@ -119,6 +139,8 @@ export const EventsView = () => {
     <EventList
       list={list}
       onEdit={handleContinue}
+      onRemove={handleRemove}
+      onDuplicate={handleDuplicate}
       onContinue={handleContinue}
       onSend={handleSend}
     />

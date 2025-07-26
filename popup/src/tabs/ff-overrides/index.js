@@ -4,12 +4,12 @@ import { NewItem } from "./NewItem";
 import { List } from "./List";
 import { getActiveTab } from "extension/utils";
 import { getAccountInfo } from "extension/auth";
-import { go, getConfig } from "configs";
+import { go, useConfig } from "ConfigContext";
 
 const { chrome } = window;
-const LS_KEY = getConfig().ffOverrides.overridesKey;
+const getLSKey = (config) => config.ffOverrides.overridesKey;
 
-export const getFFOverrides = (tab) =>
+const getFFOverrides = (tab, config) =>
   new Promise((resolve, reject) => {
     function injectedFn(key) {
       return JSON.parse(localStorage.getItem(key) || "{}");
@@ -19,13 +19,13 @@ export const getFFOverrides = (tab) =>
       .executeScript({
         target: { tabId: tab.id },
         func: injectedFn,
-        args: [LS_KEY],
+        args: [getLSKey(config)],
       })
       .then(([{ result }]) => resolve(result))
       .catch(reject);
   });
 
-export const setFFOverrides = (tab, overrides) =>
+const setFFOverrides = (tab, config, overrides) =>
   new Promise((resolve, reject) => {
     function injectedFn(key, overrides) {
       if (!Object.keys(overrides).length) {
@@ -40,29 +40,30 @@ export const setFFOverrides = (tab, overrides) =>
       .executeScript({
         target: { tabId: tab.id },
         func: injectedFn,
-        args: [LS_KEY, overrides],
+        args: [getLSKey(config), overrides],
       })
       .then(() => resolve())
       .catch(reject);
   });
 
-const getFeatureFlags = async () => {
+const getFeatureFlags = async (config) => {
   const tab = await getActiveTab();
   const account = await getAccountInfo(tab);
-  const overrides = await getFFOverrides(tab);
-  const values = go(account, getConfig().ffOverrides.propertyPath) || {};
+  const overrides = await getFFOverrides(tab, config);
+  const values = go(account, config.ffOverrides.propertyPath) || {};
 
   return { values, overrides };
 };
 
 export const FFOverridesView = () => {
+  const { getConfig } = useConfig();
   const [values, setValues] = useState({});
   const [overrides, setOverrides] = useState({});
 
   const update = useCallback(async (overrides) => {
     const tab = await getActiveTab();
-    await setFFOverrides(tab, overrides);
-    const updatedOverrides = await getFFOverrides(tab);
+    await setFFOverrides(tab, getConfig(), overrides);
+    const updatedOverrides = await getFFOverrides(tab, getConfig());
 
     setOverrides(updatedOverrides);
   }, []);
@@ -104,7 +105,7 @@ export const FFOverridesView = () => {
   }, []);
 
   useEffect(() => {
-    getFeatureFlags().then(({ values, overrides }) => {
+    getFeatureFlags(getConfig()).then(({ values, overrides }) => {
       setValues(values);
       setOverrides(overrides);
     });

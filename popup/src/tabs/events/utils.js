@@ -1,6 +1,4 @@
-import { getConfig } from "configs";
-
-export const Environments = getConfig().events.urls;
+export const getEnvironments = (config) => config.events.urls;
 
 export const Sender = {
   BROWSER: "$browser",

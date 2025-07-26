@@ -1,9 +1,8 @@
 import { getActiveTab } from "./utils";
-import { getConfig } from "../configs.js";
 
 const { chrome } = window;
 
-export const dumpAuthSession = (tab) =>
+export const dumpAuthSession = (tab, authStateKeys) =>
   new Promise((resolve, reject) => {
     function injectedFn(keys) {
       return keys.reduce(
@@ -19,7 +18,7 @@ export const dumpAuthSession = (tab) =>
       .executeScript({
         target: { tabId: tab.id },
         func: injectedFn,
-        args: [getConfig().auths.authStateKeys],
+        args: [authStateKeys],
       })
       .then(([{ result }]) => resolve(result))
       .catch(reject);

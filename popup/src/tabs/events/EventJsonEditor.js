@@ -8,8 +8,11 @@ import Typography from "@mui/joy/Typography";
 import { JsonEditor } from "shared/JsonEditor";
 import WarningIcon from "@mui/icons-material/Warning";
 import { useState } from "react";
+import Input from "@mui/joy/Input";
 
-export const EventJsonEditor = ({ template, onSave, onCancel }) => {
+export const EventJsonEditor = ({ options, onSave, onCancel }) => {
+  const { template } = options;
+  const [description, setDescription] = useState(options.description);
   const [accordionState, setAccordionState] = useState(false);
 
   return (
@@ -17,16 +20,26 @@ export const EventJsonEditor = ({ template, onSave, onCancel }) => {
       <AccordionGroup transition="0s ease">
         <Accordion onChange={setAccordionState}>
           <AccordionSummary>
+            <Input
+              value={description}
+              onChange={({ currentTarget: { value } }) => setDescription(value)}
+              placeholder="Event description"
+              sx={{ flex: 1 }}
+            />
+            <br />
             Code editor allows you to modify event data including template marks
           </AccordionSummary>
           <AccordionDetails>
             <Typography>
               Template mark should be wrapped with &#123;&#123; and &#125;&#125;
-              and contain <strong>a-z A-Z 0-9 _ -</strong>, for example:<br />
+              and contain <strong>a-z A-Z 0-9 _ -</strong>, for example:
+              <br />
               <strong>&#123;&#123;MyMark1&#125;&#125;</strong>,{" "}
               <strong>&#123;&#123;my_mark_2&#125;&#125;</strong>,{" "}
               <strong>&#123;&#123;MY-MARK-3&#125;&#125;</strong>.<br />
-              Template mark can be used multiple times and may contain default value provided after a colon symbol:<br />
+              Template mark can be used multiple times and may contain default
+              value provided after a colon symbol:
+              <br />
               <strong>&#123;&#123;API_KEY:3h3g2g23hh4j&#125;&#125;</strong>
             </Typography>
             <br />
@@ -83,7 +96,12 @@ export const EventJsonEditor = ({ template, onSave, onCancel }) => {
                 </>
               )}
             </span>
-            <Button color="primary" onClick={() => onSave(updatedCode)}>
+            <Button
+              color="primary"
+              onClick={() =>
+                onSave({ ...options, template: updatedCode, description })
+              }
+            >
               Save Event
             </Button>
             <Button color="neutral" onClick={() => onCancel()}>

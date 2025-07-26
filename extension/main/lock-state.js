@@ -1,7 +1,9 @@
 (() => {
-  let unlockState;
+  window.__consoleHelper__ = window.__consoleHelper__ || {};
 
-  const wrapKey = (key) => `_ch_lock_state_:${key}`;
+  const LOCKED_KEY = "_ch_lock_state_:";
+  const LOCKED_STATE = "_ch_lock_state_";
+  const wrapKey = (key) => `${LOCKED_KEY}${key}`;
   const isWrappedKey = (key) => typeof key === "string" && /_:.+$/.test(key);
   const unwrapKey = (key) => key.match(/_:(.+)$/)[1];
 
@@ -70,8 +72,13 @@
     },
   });
 
-  const lockState = () => {
-    unlockState = () => {
+  window.__consoleHelper__.isStateLocked = () =>
+    !!receiverStorage[LOCKED_STATE];
+
+  window.__consoleHelper__.lockState = (copyOnLock) => {
+    window.__consoleHelper__.unlockState = (copyOnRestore) => {
+      delete receiverStorage[LOCKED_STATE];
+
       // set original local storage
       Object.defineProperty(window, "localStorage", {
         get: () => originalLocalStorage,
@@ -80,11 +87,14 @@
       });
 
       // unreference this function
-      unlockState = null;
+      window.__consoleHelper__.unlockState = null;
 
       // copy values stored in receiver storage to local storage
       Object.entries(fakeStorage).forEach(([key, value]) => {
-        originalLocalStorage[key] = value;
+        if (copyOnRestore) {
+          originalLocalStorage[key] = value;
+        }
+
         // delete values from receiver storage
         delete receiverStorage[wrapKey(key)];
       });
@@ -97,27 +107,29 @@
     });
 
     // copy values from local storage to receiver storage
-    Object.entries(originalLocalStorage).forEach(([key, value]) => {
-      fakeStorage[key] = value;
-      /*
-       * In case if app stored a reference to original local storage,
-       * we want values them to be undefined instead of serving outdated values.
-       */
-      delete originalLocalStorage[key];
-    });
+    if (copyOnLock) {
+      Object.entries(originalLocalStorage).forEach(([key, value]) => {
+        fakeStorage[key] = value;
+        /*
+         * In case if app stored a reference to original local storage,
+         * we want values them to be undefined instead of serving outdated values.
+         */
+        // TODO this is rather an edge case, not sure if this should be kept
+        delete originalLocalStorage[key];
+      });
+    }
+
+    receiverStorage[LOCKED_STATE] = copyOnLock ? "1" : "0";
   };
 
-  window.addEventListener("message", ({ data }) => {
-    if (!data || typeof data !== "object") {
-      return;
-    }
+  // check if local storage is locked and apply lock again on page load
+  if (receiverStorage[LOCKED_STATE]) {
+    // delete locked key to prevent it leaking to fake storage
+    // it will be reapplied on lockState()
+    delete receiverStorage[LOCKED_STATE];
 
-    if (data.type === "ce-lock-state:tab-enable" && !unlockState) {
-      lockState();
-    }
-
-    if (data.type === "ce-lock-state:tab-disable" && unlockState) {
-      unlockState();
-    }
-  });
+    // we don't need to copy LocalStorage content again on setting up lock again
+    // everything we need was copied on initial setup. copying data again may polute app state.
+    window.__consoleHelper__.lockState();
+  }
 })();

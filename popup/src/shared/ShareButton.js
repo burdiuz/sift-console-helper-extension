@@ -1,8 +1,8 @@
 import { Button } from "@mui/joy";
-import CopyAllIcon from "@mui/icons-material/CopyAll";
+import Icon from "@mui/icons-material/IosShareOutlined";
 import { useSnackbars } from "./Snackbars";
 
-export const CopyToClipboardButton = ({
+export const ShareButton = ({
   value,
   message,
   children,
@@ -16,11 +16,11 @@ export const CopyToClipboardButton = ({
       variant={variant}
       {...props}
       onClick={() => {
-        navigator.clipboard.writeText(JSON.stringify(value, null, 2));
+        navigator.clipboard.writeText(value);
         message && showSnackbar(message);
       }}
     >
-      <CopyAllIcon />
+      <Icon />
       {children}
     </Button>
   );

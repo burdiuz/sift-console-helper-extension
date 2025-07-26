@@ -1,4 +1,13 @@
-import { go, getConfig } from "./configs.js";
+import {
+  go,
+  getConfig,
+  readConfigFromFile,
+  sendConfigToTheTab,
+} from "./background/configs.js";
+import {
+  isTabLocked,
+  toggleLockStateForTheTab,
+} from "./background/lock-state.js";
 
 const accounts = {};
 const analysts = {};
@@ -34,31 +43,6 @@ const setStorageItem = (key, value) =>
 chrome.tabs.onRemoved.addListener((tabId) => {
   clearCapturedData(tabId);
 });
-
-const sendConfigToTheTab = (tabId) => {
-  function injectedFn(config) {
-    window.__consoleHelper__ = window.__consoleHelper__ || {};
-    window.__consoleHelper__.config = config;
-  }
-
-  chrome.scripting
-    .executeScript({
-      target: { tabId },
-      func: injectedFn,
-      args: [getConfig()],
-      injectImmediately: true,
-      world: "MAIN",
-    })
-    .catch(console.error);
-};
-
-const lockStateForTheTab = async (tabId) => {
-  const data = await getStorageItem("lock-state");
-
-  if (data?.[tabId]) {
-    return chrome.tabs.sendMessage(tabId, { type: "ce-lock-state:tab-enable" });
-  }
-};
 
 const storeAuthSession = async (tab, session, analyst) => {
   const {
@@ -96,7 +80,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return;
   }
 
-  if (!sender.tab) {
+  console.log("onMessage:", request, sender);
+
+  // filter out requests from extension popup
+  if (/^chrome-extension:\/\//.test(sender.origin) || !sender.tab) {
     // ignore requests not from tabs
     return;
   }
@@ -108,7 +95,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "ce-tab-info-reset":
       clearCapturedData(tabId);
       sendConfigToTheTab(tabId);
-      lockStateForTheTab(tabId);
       break;
     case "ce-account-info-captured":
       accounts[tabId] = data;
@@ -142,15 +128,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
   }
 
-  // Not calling with empty response causes runtime error is other party expects answer
+  // Not calling with empty response causes runtime error if other party expects answer
   // Unchecked runtime.lastError: The message port closed before a response was received.
   try {
     sendResponse();
   } catch (err) {
     console.error(err);
   }
-
-  console.log("onMessage:", request, sender);
 });
 
 /**
@@ -162,14 +146,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return;
   }
 
-  if (sender.tab) {
+  // filter out requests from an app, pass only popup requests
+  if (!/^chrome-extension:\/\//.test(sender.origin)) {
     // ignore requests from tabs
     return;
   }
 
   const { type, tabId } = request;
 
+  console.log("message:", type);
+
   switch (type) {
+    case "get-config-data":
+      sendResponse(getConfig());
+      break;
     case "get-account-info":
       sendResponse(accounts[tabId]);
       break;
@@ -182,7 +172,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "get-mixpanel-tracking-events-info":
       sendResponse(mixpanel[tabId]);
       break;
+    case "get-tab-lock-state":
+      isTabLocked(tabId).then((locked) => sendResponse({ tabId, locked }));
+      return true;
+    case "toggle-tab-lock":
+      toggleLockStateForTheTab(tabId, request, (locked) =>
+        sendResponse({ tabId, locked })
+      );
+      return true;
   }
-
-  console.log("onMessage:", request, sender);
 });
+
+/**
+ * Each time script starts we should read the config file
+ */
+readConfigFromFile();

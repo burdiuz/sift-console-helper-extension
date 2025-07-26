@@ -8,7 +8,8 @@ import RadioGroup from "@mui/joy/RadioGroup";
 import Divider from "@mui/joy/Divider";
 import Typography from "@mui/joy/Typography";
 import { useCallback, useEffect, useState } from "react";
-import { Environments, Runner } from "./utils";
+import { getEnvironments, Runner } from "./utils";
+import { useConfig } from "ConfigContext";
 
 const RESERVED_TEMPLATE_KEYS = ["RANDOM", "SEQUENCE"];
 
@@ -17,10 +18,11 @@ const RunnerOptions = [
   { label: "Run in a new Tab in current window", value: Runner.TAB },
 ];
 
-export const SendEvent = ({ options, onSend }) => {
+export const SendEvent = ({ options, onSend, onRemove }) => {
+  const { getConfig } = useConfig();
   const [runner, setRunner] = useState(options.runner || Runner.WINDOW);
   const [selectedEnv, setSelectedEnv] = useState(
-    options.env || Environments.PROD
+    options.env || getEnvironments(getConfig()).PROD
   );
   const [sendRepeats, setSendRepeats] = useState(options.repeats || 1);
   const [sendTimeout, setSendTimeout] = useState(options.timeout || 250);
@@ -120,7 +122,14 @@ export const SendEvent = ({ options, onSend }) => {
         placeholder="Optional URL query parameters string"
         sx={{ alignSelf: "stretch" }}
       />
-      <Box sx={{ display: "flex", gap: "8px" }}>
+      <Box sx={{ display: "flex", gap: "8px", alignSelf: "stretch" }}>
+        <Button
+          color="danger"
+          onClick={() => onRemove(options.id)}
+          sx={{ marginRight: "auto" }}
+        >
+          Remove
+        </Button>
         <Box
           sx={{
             display: "flex",
@@ -164,7 +173,7 @@ export const SendEvent = ({ options, onSend }) => {
           onChange={(_, value) => setSelectedEnv(value)}
           style={{ width: "80px" }}
         >
-          {Object.entries(Environments).map(([key, value]) => (
+          {Object.entries(getEnvironments(getConfig())).map(([key, value]) => (
             <Option key={key} value={value}>
               {key}
             </Option>

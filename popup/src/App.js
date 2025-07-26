@@ -24,6 +24,7 @@ import { Typography } from "@mui/joy";
 import { getActiveTab, getTabRootUrl } from "extension/utils";
 import { SettingsView } from "tabs/settings";
 import { ConfirmationText } from "tabs/settings/ConfirmationText";
+import { ConfigContextProvider, useConfigContext } from "ConfigContext";
 
 const { chrome } = window;
 
@@ -118,7 +119,7 @@ const AppContent = ({ tabId }) => (
       <AppDumpView />
     </TabPanel>
     <TabPanel value={TabKeys.LOCK_STATE}>
-      <LockStateView />
+      <LockStateView tabId={tabId} />
     </TabPanel>
     <TabPanel value={TabKeys.MIXPANEL}>
       <MixpanelView />
@@ -141,6 +142,18 @@ const NotAvailable = () => (
     <Typography>Target Tab is no longer available.</Typography>
   </Box>
 );
+const ReadingConfig = () => (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "600px",
+    }}
+  >
+    <Typography>Reading extension config...</Typography>
+  </Box>
+);
 
 const Confirmation = ({ onConfirm }) => (
   <Box
@@ -161,13 +174,30 @@ const Confirmation = ({ onConfirm }) => (
 
 const HASH_TAB_ID = Number(window.location.hash.substr(1));
 
-function App() {
-  const detatched = useMemo(() => !!HASH_TAB_ID, []);
-  const [tabAvailable, setTabAvailable] = useState(true);
+const AppWrapper = ({ children }) => (
+  <CssVarsProvider>
+    <CssBaseline />
+    <ConfigContextProvider>
+      <div className="App">
+        <SnackbarsProvider>{children}</SnackbarsProvider>
+      </div>
+    </ConfigContextProvider>
+  </CssVarsProvider>
+);
+
+const AppInitChecks = ({ onComplete }) => {
   const [tabId, setTabId] = useState();
+  const configReady = !!useConfigContext();
+  const [tabAvailable, setTabAvailable] = useState(true);
   const [confirmed, setConfirmed] = useState(
     () => !!localStorage.getItem("confirmed-to-proceed")
   );
+
+  useEffect(() => {
+    if (tabId && configReady && tabAvailable && confirmed) {
+      onComplete(tabId);
+    }
+  }, [tabId, configReady && tabAvailable && confirmed]);
 
   useEffect(() => {
     if (!HASH_TAB_ID) {
@@ -202,29 +232,41 @@ function App() {
     };
   }, []);
 
+  if (!configReady) {
+    return <ReadingConfig />;
+  }
+
+  if (!tabAvailable) {
+    return <NotAvailable />;
+  }
+
+  if (!confirmed) {
+    return (
+      <Confirmation
+        onConfirm={() => {
+          localStorage.setItem("confirmed-to-proceed", "1");
+          setConfirmed(true);
+        }}
+      />
+    );
+  }
+
+  return null;
+};
+
+const App = () => {
+  const detatched = useMemo(() => !!HASH_TAB_ID, []);
+  const [tabId, setTabId] = useState();
+
   return (
-    <CssVarsProvider>
-      <CssBaseline />
-      <div className="App">
-        <SnackbarsProvider>
-          {confirmed ? (
-            tabAvailable ? (
-              <AppContent tabId={tabId} detatched={detatched} />
-            ) : (
-              <NotAvailable />
-            )
-          ) : (
-            <Confirmation
-              onConfirm={() => {
-                localStorage.setItem("confirmed-to-proceed", "1");
-                setConfirmed(true);
-              }}
-            />
-          )}
-        </SnackbarsProvider>
-      </div>
-    </CssVarsProvider>
+    <AppWrapper>
+      {tabId ? (
+        <AppContent tabId={tabId} detatched={detatched} />
+      ) : (
+        <AppInitChecks onComplete={(value) => setTabId(value)} />
+      )}
+    </AppWrapper>
   );
-}
+};
 
 export default App;
