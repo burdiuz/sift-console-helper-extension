@@ -10,14 +10,26 @@ const { chrome } = window;
 
 export const ConfigContext = createContext(null);
 
+const requestConfig = () =>
+  chrome.runtime.sendMessage({ type: "get-config-data" });
+
 export const ConfigContextProvider = ({ children }) => {
   const [config, setConfig] = useState(null);
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ type: "get-config-data" }).then((data) => {
-      setConfig(data);
-      console.log("Config data:", data);
-    });
+    const requestAndSaveConfig = () => {
+      requestConfig().then((data) => {
+        if (data) {
+          setConfig(data);
+          console.log("Config data:", data);
+        } else {
+          // half a second should be more than enough for a message exchange
+          setTimeout(requestAndSaveConfig, 500);
+        }
+      });
+    };
+
+    requestAndSaveConfig();
   }, []);
 
   return (

@@ -68,6 +68,7 @@
       console.log("Analyst info captured:", data);
       tunnelMessage("ce-analyst-info-captured", {
         analyst: data,
+        origin: window.location.origin,
         session: getAuthInfo(),
       });
 

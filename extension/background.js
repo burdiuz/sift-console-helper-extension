@@ -44,7 +44,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   clearCapturedData(tabId);
 });
 
-const storeAuthSession = async (tab, session, analyst) => {
+const storeAuthSession = async (session, analyst, origin) => {
   const {
     auths: { tokenKey, analystNamePath },
   } = getConfig();
@@ -61,7 +61,7 @@ const storeAuthSession = async (tab, session, analyst) => {
 
   const item = {
     id: date,
-    name: `${getTabRootUrl(tab)} / ${go(analyst, analystNamePath)}`,
+    name: `${origin} / ${go(analyst, analystNamePath)}`,
     data: session,
     date,
     auto: true,
@@ -101,9 +101,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       accounts[tabId] = data;
       break;
     case "ce-analyst-info-captured":
-      const { analyst, session } = data;
+      const { analyst, session, origin } = data;
       analysts[tabId] = analyst;
-      storeAuthSession(sender.tab, session, analyst);
+      storeAuthSession(session, analyst, origin);
       break;
     case "ce-roles-info-captured":
       roles[tabId] = data;
