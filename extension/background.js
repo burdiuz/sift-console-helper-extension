@@ -54,6 +54,22 @@ const storeAuthSession = async (session, analyst, origin) => {
   const exists = list?.some(({ data }) => data[tokenKey] === session[tokenKey]);
 
   if (exists) {
+    /**
+     * If exists we want to refresh session info
+     */
+    setStorageItem(
+      "app-auth-sessions",
+      list.map((item) => {
+        if (item.data[tokenKey] !== session[tokenKey]) {
+          return item;
+        }
+
+        return {
+          ...item,
+          data: session,
+        };
+      })
+    );
     return;
   }
 

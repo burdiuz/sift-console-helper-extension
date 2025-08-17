@@ -39,6 +39,9 @@ export const applyAuthSessionDump = (tab, data) =>
         target: { tabId: tab.id },
         func: injectedFn,
         args: [data],
+        // If tab is locked, will use *locked* localStorage
+        // In ISOLATED world it would be original localStorage
+        world: "MAIN",
       })
       .then(() => resolve())
       .catch(reject);
