@@ -4,26 +4,29 @@ import Button from "@mui/joy/Button";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
-import Radio from "@mui/joy/Radio";
-import RadioGroup from "@mui/joy/RadioGroup";
 import { useCallback, useMemo, useState } from "react";
-import { getCustomEventPayload, getEventsData } from "./payload";
+import { getCustomEventPayload } from "./payload";
 import { Sender } from "./utils";
-
-const SenderOptions = [
-  { label: "Sent by browser", value: Sender.BROWSER },
-  { label: "Sent by an app", value: Sender.APP },
-];
+import { useConfig } from "ConfigContext";
 
 export const NewEvent = ({ onContinue }) => {
+  const { getConfig } = useConfig();
   const { data, options } = useMemo(() => {
-    const data = getEventsData();
+    const data = getConfig().events.templates;
     const options = Object.keys(data);
 
     return { data, options };
   }, []);
 
-  const [sender, setSender] = useState(Sender.BROWSER);
+  /**
+   * mixins should be kept as an array and values will be taken by index
+   * this way we resolve naming conflicts -- multiple mixins with same name,
+   * config allows this.
+   */
+  const mixins = getConfig().events.mixins;
+
+  const [allowMixins, setAllowMixins] = useState(true);
+  const [selectedMixin, setSelectedMixin] = useState(0);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("");
@@ -31,8 +34,9 @@ export const NewEvent = ({ onContinue }) => {
 
   const handleSelectEvent = useCallback((event) => {
     if (!event) {
-      setSelectedEvent("");
       setTemplates([]);
+      setAllowMixins(true);
+      setSelectedEvent("");
       return;
     }
 
@@ -40,11 +44,15 @@ export const NewEvent = ({ onContinue }) => {
     const eventData = data[event];
 
     if (eventData) {
-      const templates = Object.keys(eventData);
+      // "meta" is an optional event configuration object and not a template
+      // it must be excluded from a selection
+      const templates = Object.keys(eventData).filter((name) => name != "meta");
       setTemplates(templates);
+      setAllowMixins(eventData.meta?.allowMixins ?? true);
       setSelectedTemplate(templates[0]);
     } else {
       setTemplates([]);
+      setAllowMixins(true);
       setSelectedTemplate("");
     }
   }, []);
@@ -54,16 +62,10 @@ export const NewEvent = ({ onContinue }) => {
       ? { ...data[selectedEvent][selectedTemplate] }
       : getCustomEventPayload(selectedEvent);
 
-    if (sender === Sender.APP) {
-      delete template[Sender.BROWSER];
-    } else {
-      delete template[Sender.APP];
-    }
-
     const options = {
       event: selectedEvent,
       description,
-      sender,
+      mixin: (allowMixins && mixins[selectedMixin]?.data) || {},
       template: JSON.stringify(template, null, 2),
     };
 
@@ -105,15 +107,19 @@ export const NewEvent = ({ onContinue }) => {
           placeholder="Optional event description"
           sx={{ flex: 1 }}
         />
-        <RadioGroup
-          value={sender}
-          orientation="horizontal"
-          onChange={({ target: { value } }) => setSender(value)}
+        <Select
+          value={selectedMixin}
+          disabled={!allowMixins}
+          onChange={(_, value) => setSelectedMixin(value)}
+          placeholder="Select event mixin"
+          sx={{ flex: '0 0 240px' }}
         >
-          {SenderOptions.map(({ label, value }) => (
-            <Radio key={label} value={value} label={label}></Radio>
+          {mixins.map(({ name }, index) => (
+            <Option key={index} value={index}>
+              {name}
+            </Option>
           ))}
-        </RadioGroup>
+        </Select>
       </Box>
     </>
   );
