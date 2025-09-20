@@ -17,16 +17,15 @@ export const EventJsonEditor = ({ options, onSave, onCancel }) => {
 
   return (
     <>
+      <Input
+        value={description}
+        onChange={({ currentTarget: { value } }) => setDescription(value)}
+        placeholder="Event description"
+        sx={{ flex: 1 }}
+      />
       <AccordionGroup transition="0s ease">
         <Accordion onChange={setAccordionState}>
           <AccordionSummary>
-            <Input
-              value={description}
-              onChange={({ currentTarget: { value } }) => setDescription(value)}
-              placeholder="Event description"
-              sx={{ flex: 1 }}
-            />
-            <br />
             Code editor allows you to modify event data including template marks
           </AccordionSummary>
           <AccordionDetails>

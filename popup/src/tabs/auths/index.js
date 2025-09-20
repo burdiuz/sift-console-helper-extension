@@ -29,9 +29,11 @@ const getAuthData = async (config) => {
 
   return {
     id: date,
+    host,
+    //name: analyst ? `${host} / ${go(analyst, config.auths.analystNamePath)}` : host,
     name: analyst
-      ? `${host} / ${go(analyst, config.auths.analystNamePath)}`
-      : host,
+      ? go(analyst, config.auths.analystNamePath)
+      : "Unknown analyst",
     date,
     data,
   };
@@ -70,19 +72,56 @@ export const AuthView = () => {
   }, [jsonText]);
 
   const reloadList = useCallback(async () => {
+    //*
     const list = await getAuthsList(getConfig());
 
     setList(list || []);
+    //*/
     /*
     setList([
       {
-        name: "auth session mock",
+        name: "auth session mock 1",
+        host: "https://mui.com",
         id: 1726600000000,
         date: 1726681802924,
         data: { test_me: "abc-123" },
       },
+      {
+        name: "auth session mock 2",
+        id: 1726600000000,
+        date: 1726681802925,
+        data: { test_me: "abc-123" },
+      },
+      {
+        name: "auth session mock 3",
+        host: "https://www.youtube.com",
+        id: 1726600000000,
+        date: 1726681802926,
+        data: { test_me: "abc-123" },
+      },
+      {
+        name: "auth session mock 4",
+        host: "https://github.com",
+        id: 1726600000000,
+        date: 1726681802927,
+        data: { test_me: "abc-123" },
+      },
+      {
+        name: "auth session mock 5",
+        host: "https://github.com",
+        id: 1726600000000,
+        date: 1726681802928,
+        data: { test_me: "abc-123" },
+      },
+      {
+        name: "auth session mock 6",
+        host: "https://www.youtube.com",
+        id: 1726600000000,
+        date: 1726681802929,
+        data: { test_me: "abc-123" },
+      },
     ]);
-    */
+    //*/
   }, []);
 
   const handleStore = useCallback(async () => {

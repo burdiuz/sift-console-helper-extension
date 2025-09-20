@@ -56,7 +56,10 @@
       }
     ],
     "templates": {
-      /* The list of custom event templates for event creation */
+      /**
+       * The list of custom event templates for event creation
+       * can b e obtained from https://developers.sift.com/docs/curl/events-api/reserved-events
+       */
       "$create_account": {
         "Sample $create_account event": {
           "$type": "$create_account",

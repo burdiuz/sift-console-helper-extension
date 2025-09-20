@@ -6,7 +6,6 @@ import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import { useCallback, useMemo, useState } from "react";
 import { getCustomEventPayload } from "./payload";
-import { Sender } from "./utils";
 import { useConfig } from "ConfigContext";
 
 export const NewEvent = ({ onContinue }) => {
