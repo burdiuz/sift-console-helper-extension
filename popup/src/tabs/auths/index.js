@@ -19,6 +19,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { go, useConfig } from "ConfigContext";
+import { Container } from "./Container";
 
 const getAuthData = async (config) => {
   const tab = await getActiveTab();
@@ -210,7 +211,7 @@ export const AuthView = () => {
           </AccordionDetails>
         </Accordion>
       </AccordionGroup>
-      <List list={list} onApply={handleApply} onRemove={handleRemove} />
+      <Container list={list} onApply={handleApply} onRemove={handleRemove} />
     </Box>
   );
 };
