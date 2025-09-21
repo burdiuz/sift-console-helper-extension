@@ -20,6 +20,18 @@ const RunnerOptions = [
 
 export const SendEvent = ({ options, onSend, onRemove }) => {
   const { getConfig } = useConfig();
+
+  /**
+   * mixins should be kept as an array and values will be taken by index
+   * this way we resolve naming conflicts -- multiple mixins with same name,
+   * config allows this.
+   * But changing mixins list in config file may screw this up.
+   */
+  const mixins = getConfig().events.mixins;
+
+  const [selectedMixin, setSelectedMixin] = useState(
+    options.selectedMixin || 0
+  );
   const [runner, setRunner] = useState(options.runner || Runner.WINDOW);
   const [selectedEnv, setSelectedEnv] = useState(
     options.env || getEnvironments(getConfig()).PROD
@@ -62,6 +74,7 @@ export const SendEvent = ({ options, onSend, onRemove }) => {
       repeats: sendRepeats,
       timeout: sendTimeout,
       values: templateValues,
+      selectedMixin,
       urlQuery,
     };
 
@@ -82,9 +95,22 @@ export const SendEvent = ({ options, onSend, onRemove }) => {
       <Divider />
       {templateValueEntries.length ? (
         <>
-          <Typography sx={{ alignSelf: "stretch" }}>
-            Template values:
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              alignSelf: "stretch",
+            }}
+          >
+            <Typography sx={{ alignSelf: "stretch" }}>
+              Template values:
+            </Typography>
+            <Button color="danger" onClick={() => onRemove(options.id)}>
+              Remove Event
+            </Button>
+          </Box>
           <Box
             sx={{
               display: "flex",
@@ -123,13 +149,19 @@ export const SendEvent = ({ options, onSend, onRemove }) => {
         sx={{ alignSelf: "stretch" }}
       />
       <Box sx={{ display: "flex", gap: "8px", alignSelf: "stretch" }}>
-        <Button
-          color="danger"
-          onClick={() => onRemove(options.id)}
-          sx={{ marginRight: "auto" }}
+        <Select
+          value={selectedMixin}
+          disabled={!options.allowMixins}
+          onChange={(_, value) => setSelectedMixin(value)}
+          placeholder="Select event mixin"
+          sx={{ flex: "1 1 130px" }}
         >
-          Remove
-        </Button>
+          {mixins.map(({ name }, index) => (
+            <Option key={index} value={index}>
+              {name}
+            </Option>
+          ))}
+        </Select>
         <Box
           sx={{
             display: "flex",

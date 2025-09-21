@@ -3,14 +3,18 @@ import { EventList } from "./EventList";
 import { EventJsonEditor } from "./EventJsonEditor";
 import { Runner } from "./utils";
 import { getStorageItem, setStorageItem } from "extension/storage";
+import { useConfig } from "ConfigContext";
 
 const { chrome } = window;
 
 const STORAGE_KEY = "ce-send-events";
 
-const prepareEvent = (event) => {
+const prepareEvent = (event, mixins) => {
   const { template, values } = event;
-  const newEvent = { ...event };
+  const newEvent = {
+    ...event,
+    mixin: mixins?.[event.selectedMixin].data || {},
+  };
 
   newEvent.template = Object.entries(values).reduce(
     (tpl, [key, value]) =>
@@ -18,12 +22,16 @@ const prepareEvent = (event) => {
     template
   );
 
+  // delete parameters not used for sending
   delete newEvent.values;
+  delete newEvent.allowMixins;
+  delete newEvent.selectedMixin;
 
   return newEvent;
 };
 
 export const EventsView = () => {
+  const { getConfig } = useConfig();
   const [list, setList] = useState([]);
   const [options, setOptions] = useState(null);
 
@@ -38,10 +46,10 @@ export const EventsView = () => {
   }, []);
 
   const handleDuplicate = useCallback((event) => {
-    setOptions({
-      ...event,
-      id: undefined,
-    });
+    const newEvent = { ...event };
+    delete newEvent.id;
+
+    setOptions(newEvent);
   }, []);
 
   const handleRemove = useCallback(async (id) => {
@@ -69,7 +77,8 @@ export const EventsView = () => {
       })
     );
 
-    event = prepareEvent(event);
+    const mixins = getConfig().events.mixins;
+    event = prepareEvent(event, mixins);
 
     const url = `${chrome.runtime.getURL(
       "./event-runner/index.html"
@@ -112,8 +121,8 @@ export const EventsView = () => {
       );
     } else {
       const result = {
-        id: Date.now(),
         ...options,
+        id: Date.now(),
         description,
         template,
       };

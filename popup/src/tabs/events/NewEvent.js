@@ -16,16 +16,7 @@ export const NewEvent = ({ onContinue }) => {
 
     return { data, options };
   }, []);
-
-  /**
-   * mixins should be kept as an array and values will be taken by index
-   * this way we resolve naming conflicts -- multiple mixins with same name,
-   * config allows this.
-   */
-  const mixins = getConfig().events.mixins;
-
   const [allowMixins, setAllowMixins] = useState(true);
-  const [selectedMixin, setSelectedMixin] = useState(0);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("");
@@ -64,7 +55,7 @@ export const NewEvent = ({ onContinue }) => {
     const options = {
       event: selectedEvent,
       description,
-      mixin: (allowMixins && mixins[selectedMixin]?.data) || {},
+      allowMixins,
       template: JSON.stringify(template, null, 2),
     };
 
@@ -99,27 +90,12 @@ export const NewEvent = ({ onContinue }) => {
           Continue
         </Button>
       </Box>
-      <Box sx={{ display: "flex", gap: "8px", alignItems: "center" }}>
-        <Input
-          value={description}
-          onChange={({ currentTarget: { value } }) => setDescription(value)}
-          placeholder="Optional event description"
-          sx={{ flex: 1 }}
-        />
-        <Select
-          value={selectedMixin}
-          disabled={!allowMixins}
-          onChange={(_, value) => setSelectedMixin(value)}
-          placeholder="Select event mixin"
-          sx={{ flex: '0 0 240px' }}
-        >
-          {mixins.map(({ name }, index) => (
-            <Option key={index} value={index}>
-              {name}
-            </Option>
-          ))}
-        </Select>
-      </Box>
+      <Input
+        value={description}
+        onChange={({ currentTarget: { value } }) => setDescription(value)}
+        placeholder="Optional event description"
+        sx={{ flex: 1 }}
+      />
     </>
   );
 };

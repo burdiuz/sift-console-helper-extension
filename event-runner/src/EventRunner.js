@@ -93,7 +93,7 @@ const parseValues = (tpl) => {
   return { template, values };
 };
 
-const prepareEventBody = (tpl, values) => {
+const prepareEventBody = (tpl, values, mixin) => {
   const body = Object.entries(values).reduce((res, [key, config]) => {
     switch (config.type) {
       case ValueType.RANDOM:
@@ -112,8 +112,9 @@ const prepareEventBody = (tpl, values) => {
     return res;
   }, tpl);
 
-  // to confirm it is a valid JSON before sending it to content script.
-  return JSON.parse(body);
+  // to merge mixin and confirm it is a valid JSON before sending it to content script.
+  const event = JSON.parse(body);
+  return { ...event, ...mixin };
 };
 
 function sendEventFn(url, body) {
@@ -175,9 +176,9 @@ function EventRunner() {
     let eventBody = {};
 
     try {
-      const { env, template, urlQuery } = event;
+      const { env, template, urlQuery, mixin } = event;
       // mutate value configs, that's fine(house_in_fire.png)
-      eventBody = prepareEventBody(template, values);
+      eventBody = prepareEventBody(template, values, mixin);
 
       const url = urlQuery ? `${env}?${urlQuery}` : env;
 
