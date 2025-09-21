@@ -10,7 +10,11 @@ export const JsonEditor = ({ value, refresh, children, onChange }) => {
   const [updatedValue, setUpdatedValue] = useState(value);
   const isValidJson = useMemo(() => {
     try {
-      JSON.parse(updatedValue);
+      const jsonWithValues = updatedValue.replace(
+        /\{\{[a-z\d_-]+(:.*)?\}\}/gi,
+        "0"
+      );
+      JSON.parse(jsonWithValues);
       return true;
     } catch (error) {
       return false;
