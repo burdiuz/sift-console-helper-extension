@@ -77,7 +77,8 @@ const storeAuthSession = async (session, analyst, origin) => {
 
   const item = {
     id: date,
-    name: `${origin} / ${go(analyst, analystNamePath)}`,
+    name: go(analyst, analystNamePath),
+    host: origin,
     data: session,
     date,
     auto: true,
