@@ -13,7 +13,7 @@ const prepareEvent = (event, mixins) => {
   const { template, values } = event;
   const newEvent = {
     ...event,
-    mixin: mixins?.[event.selectedMixin].data || {},
+    mixin: mixins?.[event.selectedMixin] || {},
   };
 
   newEvent.template = Object.entries(values).reduce(

@@ -18,7 +18,7 @@ export const Container = ({ list, onApply, onRemove }) => {
     <>
       <Tabs
         defaultValue={defaultTab}
-        onChange={(event, newTab) =>
+        onChange={(_, newTab) =>
           localStorage.setItem("auths-tab-current-sub-tab", newTab)
         }
       >

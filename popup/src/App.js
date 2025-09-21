@@ -47,7 +47,7 @@ const AppContent = ({ tabId }) => {
   return (
     <Tabs
       defaultValue={defaultTab}
-      onChange={(event, newTab) =>
+      onChange={(_, newTab) =>
         localStorage.setItem("app-main-navigation-current-tab", newTab)
       }
     >

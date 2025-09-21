@@ -112,8 +112,9 @@ const prepareEventBody = (tpl, values, mixin) => {
     return res;
   }, tpl);
 
-  // to merge mixin and confirm it is a valid JSON before sending it to content script.
   const event = JSON.parse(body);
+
+  // merge with mixin, mixin has precedence
   return { ...event, ...mixin };
 };
 

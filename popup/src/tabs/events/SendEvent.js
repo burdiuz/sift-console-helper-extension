@@ -7,7 +7,7 @@ import Radio from "@mui/joy/Radio";
 import RadioGroup from "@mui/joy/RadioGroup";
 import Divider from "@mui/joy/Divider";
 import Typography from "@mui/joy/Typography";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getEnvironments, Runner } from "./utils";
 import { useConfig } from "ConfigContext";
 
@@ -21,16 +21,14 @@ const RunnerOptions = [
 export const SendEvent = ({ options, onSend, onRemove }) => {
   const { getConfig } = useConfig();
 
-  /**
-   * mixins should be kept as an array and values will be taken by index
-   * this way we resolve naming conflicts -- multiple mixins with same name,
-   * config allows this.
-   * But changing mixins list in config file may screw this up.
-   */
-  const mixins = getConfig().events.mixins;
+  const mixinList = useMemo(() => {
+    const { mixins } = getConfig().events;
+
+    return Object.keys(mixins);
+  }, []);
 
   const [selectedMixin, setSelectedMixin] = useState(
-    options.selectedMixin || 0
+    options.selectedMixin || mixinList[0]
   );
   const [runner, setRunner] = useState(options.runner || Runner.WINDOW);
   const [selectedEnv, setSelectedEnv] = useState(
@@ -156,8 +154,8 @@ export const SendEvent = ({ options, onSend, onRemove }) => {
           placeholder="Select event mixin"
           sx={{ flex: "1 1 130px" }}
         >
-          {mixins.map(({ name }, index) => (
-            <Option key={index} value={index}>
+          {mixinList.map((name, index) => (
+            <Option key={index} value={name}>
               {name}
             </Option>
           ))}

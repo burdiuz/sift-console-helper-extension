@@ -69,7 +69,7 @@ export const NewEvent = ({ onContinue }) => {
           value={selectedEvent}
           options={options}
           freeSolo
-          onChange={(event, str, type, option) => handleSelectEvent(str)}
+          onChange={(_, str) => handleSelectEvent(str)}
           sx={{ flex: 1 }}
           placeholder="Select reserved or provide custom event and hit Enter"
         />

@@ -18,43 +18,34 @@
       "PROD": "URLs for sending events, PROD is default on UI and must exist",
       "DEV": ""
     },
-    "mixins": [
+    "mixins": {
       /**
        * The list of event mixins, mainly used to set event origin,
        * but user may define any parameters here, all of them will be
        * applied to an event.
        * There could be two types of origins -- app or browser.
        */
-      {
-        "name": "Default browser",
-        "data": {
-          "$browser": {
-            "$user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
-            "$accept_language": "en-US",
-            "$content_language": "en-GB"
-          }
+      "Default browser": {
+        "$browser": {
+          "$user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
+          "$accept_language": "en-US",
+          "$content_language": "en-GB"
         }
       },
-      {
-        "name": "Default app",
-        "data": {
-          "$app": {
-            "$os": "iOS",
-            "$os_version": "10.1.3",
-            "$device_manufacturer": "Apple",
-            "$device_model": "iPhone 4,2",
-            "$device_unique_id": "A3D261E4-DE0A-470B-9E4A-720F3D3D22E6",
-            "$app_name": "Calculator",
-            "$app_version": "3.2.7",
-            "$client_language": "en-US"
-          }
+      "Default app": {
+        "$app": {
+          "$os": "iOS",
+          "$os_version": "10.1.3",
+          "$device_manufacturer": "Apple",
+          "$device_model": "iPhone 4,2",
+          "$device_unique_id": "A3D261E4-DE0A-470B-9E4A-720F3D3D22E6",
+          "$app_name": "Calculator",
+          "$app_version": "3.2.7",
+          "$client_language": "en-US"
         }
       },
-      {
-        "name": "None",
-        "data": {}
-      }
-    ],
+      "None": {}
+    },
     "templates": {
       /**
        * The list of custom event templates for event creation
