@@ -40,95 +40,105 @@ const TabKeys = {
   SETTINGS: "settings",
 };
 
-const AppContent = ({ tabId }) => (
-  <Tabs defaultValue={TabKeys.AUTH}>
-    <Box sx={{ display: "flex" }}>
-      <TabList sx={{ flex: 1 }}>
-        <Tab value={TabKeys.AUTH}>Auth</Tab>
-        <Tab value={TabKeys.FF_OVERRIDES}>Local FFs</Tab>
-        <Tab value={TabKeys.EVENTS}>Events</Tab>
-        <Tab value={TabKeys.LOCK_STATE}>Lock State</Tab>
-        <Tab value={TabKeys.SPOOFING} sx={{ display: "none" }}>
-          Spoofing
-        </Tab>
-        <Tab value={TabKeys.ACCOUNT} sx={{ display: "none" }}>
-          Account
-        </Tab>
-        <Tab value={TabKeys.APP_DUMP}>Dump</Tab>
-        <Tab value={TabKeys.MIXPANEL}>
-          <MixpanelIcon />
-        </Tab>
-        <Tab value={TabKeys.SETTINGS}>
-          <SettingsIcon />
-        </Tab>
-      </TabList>
-      {window.location.hash.length > 1 ? (
-        <Button
-          variant="plain"
-          size="sm"
-          onClick={() => {
-            getActiveTab().then((tab) => {
-              chrome.tabs.highlight({
-                tabs: [tab.index],
-                windowId: tab.windowId,
+const AppContent = ({ tabId }) => {
+  const defaultTab =
+    localStorage.getItem("app-main-navigation-current-tab") || TabKeys.AUTH;
+
+  return (
+    <Tabs
+      defaultValue={defaultTab}
+      onChange={(event, newTab) =>
+        localStorage.setItem("app-main-navigation-current-tab", newTab)
+      }
+    >
+      <Box sx={{ display: "flex" }}>
+        <TabList sx={{ flex: 1 }}>
+          <Tab value={TabKeys.AUTH}>Auth</Tab>
+          <Tab value={TabKeys.FF_OVERRIDES}>Local FFs</Tab>
+          <Tab value={TabKeys.EVENTS}>Events</Tab>
+          <Tab value={TabKeys.LOCK_STATE}>Lock State</Tab>
+          <Tab value={TabKeys.SPOOFING} sx={{ display: "none" }}>
+            Spoofing
+          </Tab>
+          <Tab value={TabKeys.ACCOUNT} sx={{ display: "none" }}>
+            Account
+          </Tab>
+          <Tab value={TabKeys.APP_DUMP}>Dump</Tab>
+          <Tab value={TabKeys.MIXPANEL}>
+            <MixpanelIcon />
+          </Tab>
+          <Tab value={TabKeys.SETTINGS}>
+            <SettingsIcon />
+          </Tab>
+        </TabList>
+        {window.location.hash.length > 1 ? (
+          <Button
+            variant="plain"
+            size="sm"
+            onClick={() => {
+              getActiveTab().then((tab) => {
+                chrome.tabs.highlight({
+                  tabs: [tab.index],
+                  windowId: tab.windowId,
+                });
               });
-            });
-          }}
-        >
-          Highlight Tab
-        </Button>
-      ) : (
-        <Button
-          variant="plain"
-          onClick={() => {
-            const { action } = chrome.runtime.getManifest();
-            const url = chrome.runtime.getURL(action.default_popup);
+            }}
+          >
+            Highlight Tab
+          </Button>
+        ) : (
+          <Button
+            variant="plain"
+            onClick={() => {
+              const { action } = chrome.runtime.getManifest();
+              const url = chrome.runtime.getURL(action.default_popup);
 
-            chrome.windows.create({
-              url: `${url}#${tabId}`,
-              focused: true,
-              setSelfAsOpener: true,
-              type: "panel", // "popup"
-              width: 800,
-              height: 600,
-            });
+              chrome.windows.create({
+                url: `${url}#${tabId}`,
+                focused: true,
+                setSelfAsOpener: true,
+                type: "panel", // "popup"
+                width: 800,
+                height: 600,
+              });
 
-            window.close();
-          }}
-        >
-          <OpenInNewIcon />
-        </Button>
-      )}
-    </Box>
-    <TabPanel value={TabKeys.AUTH}>
-      <AuthView />
-    </TabPanel>
-    <TabPanel value={TabKeys.FF_OVERRIDES}>
-      <FFOverridesView />
-    </TabPanel>
-    <TabPanel value={TabKeys.EVENTS}>
-      <EventsView />
-    </TabPanel>
-    <TabPanel value={TabKeys.SPOOFING}>
-      <SpoofingView />
-    </TabPanel>
-    <TabPanel value={TabKeys.ACCOUNT}>
-      <AccountView />
-    </TabPanel>
-    <TabPanel value={TabKeys.APP_DUMP}>
-      <AppDumpView />
-    </TabPanel>
-    <TabPanel value={TabKeys.LOCK_STATE}>
-      <LockStateView tabId={tabId} />
-    </TabPanel>
-    <TabPanel value={TabKeys.MIXPANEL}>
-      <MixpanelView />
-    </TabPanel>
-    <TabPanel value={TabKeys.SETTINGS}>
-      <SettingsView />
-    </TabPanel>
-  </Tabs>
-);
+              window.close();
+            }}
+          >
+            <OpenInNewIcon />
+          </Button>
+        )}
+      </Box>
+      <TabPanel value={TabKeys.AUTH}>
+        <AuthView />
+      </TabPanel>
+      <TabPanel value={TabKeys.FF_OVERRIDES}>
+        <FFOverridesView />
+      </TabPanel>
+      <TabPanel value={TabKeys.EVENTS}>
+        <EventsView />
+      </TabPanel>
+      <TabPanel value={TabKeys.SPOOFING}>
+        <SpoofingView />
+      </TabPanel>
+      <TabPanel value={TabKeys.ACCOUNT}>
+        <AccountView />
+      </TabPanel>
+      <TabPanel value={TabKeys.APP_DUMP}>
+        <AppDumpView />
+      </TabPanel>
+      <TabPanel value={TabKeys.LOCK_STATE}>
+        <LockStateView tabId={tabId} />
+      </TabPanel>
+      <TabPanel value={TabKeys.MIXPANEL}>
+        <MixpanelView />
+      </TabPanel>
+      <TabPanel value={TabKeys.SETTINGS}>
+        <SettingsView />
+      </TabPanel>
+    </Tabs>
+  );
+};
 
 const NotAvailable = () => (
   <Box
