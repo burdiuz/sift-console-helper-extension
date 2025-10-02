@@ -5,7 +5,7 @@ import AccordionDetails from "@mui/joy/AccordionDetails";
 import AccordionGroup from "@mui/joy/AccordionGroup";
 import AccordionSummary from "@mui/joy/AccordionSummary";
 import Typography from "@mui/joy/Typography";
-import { JsonEditor } from "shared/JsonEditor";
+import { JsonEditor, testParseEventTemplate } from "shared/JsonEditor";
 import WarningIcon from "@mui/icons-material/Warning";
 import { useState } from "react";
 import Input from "@mui/joy/Input";
@@ -77,7 +77,7 @@ export const EventJsonEditor = ({ options, onSave, onCancel }) => {
         </Accordion>
       </AccordionGroup>
       <JsonEditor value={template} refresh={accordionState}>
-        {(updatedCode, isValid) => (
+        {(updatedCode, isValid, parsedTemplate) => (
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
             <span style={{ flex: "1" }}>
               {!isValid && (
@@ -97,9 +97,16 @@ export const EventJsonEditor = ({ options, onSave, onCancel }) => {
             </span>
             <Button
               color="primary"
-              onClick={() =>
-                onSave({ ...options, template: updatedCode, description })
-              }
+              onClick={() => {
+                onSave({
+                  ...options,
+                  // attempt to update event name if it was changed in the template
+                  // if template could not be parsed or it left empty in template keep original
+                  event: parsedTemplate?.$type || options.event,
+                  template: updatedCode,
+                  description,
+                });
+              }}
             >
               Save Event
             </Button>

@@ -101,7 +101,7 @@ export const EventsView = () => {
     }
   }, []);
 
-  const handleSave = async ({ template, description }) => {
+  const handleSave = async ({ event, template, description }) => {
     const list = (await getStorageItem(STORAGE_KEY)) || [];
 
     if (options.id) {
@@ -114,6 +114,7 @@ export const EventsView = () => {
 
           return {
             ...options,
+            event,
             description,
             template,
           };
@@ -123,6 +124,7 @@ export const EventsView = () => {
       const result = {
         ...options,
         id: Date.now(),
+        event,
         description,
         template,
       };

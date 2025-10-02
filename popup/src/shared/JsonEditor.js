@@ -5,21 +5,25 @@ import Box from "@mui/joy/Box";
 import { useMemo, useState } from "react";
 import { HeightProvider } from "./HeightProvider";
 
+export const testParseEventTemplate = (templateStr) => {
+  try {
+    const jsonWithValues = templateStr.replace(
+      /\{\{[a-z\d_-]+(:.*)?\}\}/gi,
+      "0"
+    );
+    return JSON.parse(jsonWithValues);
+  } catch (error) {
+    return null;
+  }
+};
+
 export const JsonEditor = ({ value, refresh, children, onChange }) => {
   // CodeMirror has its own state so it is not required to provide updates
   const [updatedValue, setUpdatedValue] = useState(value);
-  const isValidJson = useMemo(() => {
-    try {
-      const jsonWithValues = updatedValue.replace(
-        /\{\{[a-z\d_-]+(:.*)?\}\}/gi,
-        "0"
-      );
-      JSON.parse(jsonWithValues);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }, [updatedValue]);
+  const parsedTemplate = useMemo(
+    () => testParseEventTemplate(updatedValue),
+    [updatedValue]
+  );
 
   return (
     <HeightProvider refresh={refresh}>
@@ -45,7 +49,7 @@ export const JsonEditor = ({ value, refresh, children, onChange }) => {
             />
           </Box>
           {typeof children === "function"
-            ? children(updatedValue, isValidJson)
+            ? children(updatedValue, !!parsedTemplate, parsedTemplate)
             : children}
         </Box>
       )}

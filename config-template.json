@@ -160,7 +160,7 @@
       },
       "$chargeback": {
         "meta": {
-          "allowsMixins": false
+          "allowMixins": false
         },
         "Sample $chargeback event": {
           "$type": "$chargeback",
@@ -485,7 +485,7 @@
       },
       "$flag_content": {
         "meta": {
-          "allowsMixins": false
+          "allowMixins": false
         },
         "Sample $flag_content event": {
           "$type": "$flag_content",
@@ -501,7 +501,7 @@
       },
       "$link_session_to_user": {
         "meta": {
-          "allowsMixins": false
+          "allowMixins": false
         },
         "Sample $link_session_to_user event": {
           "$type": "$link_session_to_user",
@@ -1014,7 +1014,7 @@
       },
       "$verification": {
         "meta": {
-          "allowsMixins": false
+          "allowMixins": false
         },
         "Sample $verification event": {
           "$type": "$verification",

@@ -20,23 +20,28 @@ export const NewEvent = ({ onContinue }) => {
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("");
+  const [customEventName, setCustomEventName] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSelectEvent = useCallback((event) => {
-    if (!event) {
+  const getEventTemplateNames = (eventName) =>
+    // "meta" is an optional event configuration object and not a template
+    // it must be excluded from a selection
+    Object.keys(data[eventName] || {}).filter((name) => name != "meta");
+
+  const handleSelectEvent = useCallback((eventName) => {
+    if (!eventName) {
       setTemplates([]);
       setAllowMixins(true);
       setSelectedEvent("");
+      setCustomEventName("");
       return;
     }
 
-    setSelectedEvent(event);
-    const eventData = data[event];
+    setSelectedEvent(eventName);
+    const eventData = data[eventName];
 
     if (eventData) {
-      // "meta" is an optional event configuration object and not a template
-      // it must be excluded from a selection
-      const templates = Object.keys(eventData).filter((name) => name != "meta");
+      const templates = getEventTemplateNames(eventName);
       setTemplates(templates);
       setAllowMixins(eventData.meta?.allowMixins ?? true);
       setSelectedTemplate(templates[0]);
@@ -48,17 +53,37 @@ export const NewEvent = ({ onContinue }) => {
   }, []);
 
   const handleContinue = () => {
-    const template = selectedTemplate
-      ? { ...data[selectedEvent][selectedTemplate] }
-      : getCustomEventPayload(selectedEvent);
-
     const options = {
-      event: selectedEvent,
+      event: selectedEvent || customEventName,
       description,
       allowMixins,
-      template: JSON.stringify(template, null, 2),
     };
 
+    let template;
+
+    if (selectedTemplate) {
+      template = { ...data[selectedEvent][selectedTemplate] };
+    } else if (selectedEvent || data[customEventName]) {
+      // in case if user entered a selectable event name but never selected it
+      const eventName = selectedEvent || customEventName;
+      const templateName = getEventTemplateNames(eventName)[0];
+
+      if (templateName) {
+        template = { ...data[eventName][templateName] };
+      } else {
+        template = getCustomEventPayload(eventName);
+        options.allowMixins = false;
+      }
+    } else if (customEventName) {
+      template = getCustomEventPayload(customEventName);
+      options.allowMixins = false;
+    } else {
+      // if nothing was selected we provide template with no event name
+      template = getCustomEventPayload("{{EVENT_NAME}}");
+      options.allowMixins = false;
+    }
+
+    options.template = JSON.stringify(template, null, 2);
     onContinue(options);
   };
 
@@ -67,11 +92,14 @@ export const NewEvent = ({ onContinue }) => {
       <Box sx={{ display: "flex", gap: "8px" }}>
         <Autocomplete
           value={selectedEvent}
+          inputValue={customEventName}
           options={options}
-          freeSolo
           onChange={(_, str) => handleSelectEvent(str)}
+          onInputChange={(_, str) => setCustomEventName(str)}
           sx={{ flex: 1 }}
           placeholder="Select reserved or provide custom event and hit Enter"
+          openOnFocus
+          freeSolo
         />
         <Select
           value={selectedTemplate}
@@ -86,7 +114,10 @@ export const NewEvent = ({ onContinue }) => {
             </Option>
           ))}
         </Select>
-        <Button disabled={!selectedEvent} onClick={handleContinue}>
+        <Button
+          disabled={!selectedEvent && customEventName.length < 3}
+          onClick={handleContinue}
+        >
           Continue
         </Button>
       </Box>
